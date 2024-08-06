@@ -94,7 +94,6 @@ proc main*(
 
   var htmlTable: string
   htmlTable = make_versions_html(versions_by_module)
-  logger.log(lvlDebug, fmt"htmlTable={htmlTable}")
 
   var versions_mqc = initTable[string, string]()
   versions_mqc["id"] = "software_versions"
@@ -104,13 +103,17 @@ proc main*(
   versions_mqc["description"] = "are collected at run time from the software output."
   versions_mqc["data"] = make_versions_html(versions_by_module)
 
-  var software_versions_yml_out = newFileStream(joinPath(outdir, "software_versions.yml"), fmWrite)
+  let software_versions_yml_path = joinPath(outdir, "software_versions.yml")
+  var software_versions_yml_out = newFileStream(software_versions_yml_path, fmWrite)
   defer: software_versions_yml_out.close()
-  var software_versions_mqc_yml_out = newFileStream(joinPath(outdir, "software_versions_mqc.yml"), fmWrite)
+  let software_versions_mqc_yml_path = joinPath(outdir, "software_versions_mqc.yml")
+  var software_versions_mqc_yml_out = newFileStream(software_versions_mqc_yml_path, fmWrite)
   defer: software_versions_mqc_yml_out.close()
   Dumper().dump(versions_by_module, software_versions_yml_out)
+  logger.log(lvlInfo, fmt"Wrote '{software_versions_yml_path}'.")
   Dumper().dump(versions_mqc, software_versions_mqc_yml_out)
-
+  logger.log(lvlInfo, fmt"Wrote '{software_versions_mqc_yml_path}' for use with MultiQC.")
+  logger.log(lvlInfo, "Done!")
 
 when isMainModule:
   import cligen

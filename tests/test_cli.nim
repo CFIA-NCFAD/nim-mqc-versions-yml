@@ -15,7 +15,7 @@ var tempdir: string
 suite "CLI test":
   setup:
     tempdir = createTempDir("mqc_versions_table-", "-outdir")
-    echo "Setup: Created temp directory '{tempdir}'"
+    echo fmt"Setup: Created temp directory '{tempdir}'"
 
   teardown:
     echo fmt"Tear down: removing temp directory '{tempdir}'"
