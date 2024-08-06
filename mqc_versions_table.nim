@@ -58,6 +58,7 @@ proc main*(
   workflow_version: string,
   outdir: string = "."
 ) =
+  ## Convert a Nextflow versions.yml into a MultiQC YAML with HTML content.
   logger.log(lvlInfo, fmt"mqc_versions_table {version}")
   if not fileExists(versions_yaml):
     raise newException(IOError, fmt"Versions YAML file {versions_yaml} not found")
@@ -118,4 +119,12 @@ proc main*(
 when isMainModule:
   import cligen
   clCfg.version = VERSION
-  dispatch main
+  dispatch(main,
+    help={
+      "versions_yaml": "Path to Nextflow 'versions.yml'",
+      "workflow_name": "Nextflow workflow name e.g. $workflow.manifest.name",
+      "workflow_version": "Nextflow workflow version, e.g. $workflow.manifest.version",
+      "outdir": "Output directory for software_versions.yml and software_versions_mqc.yml",
+      "nextflow_version": "Nextflow version"
+    }
+  )
