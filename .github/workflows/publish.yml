@@ -9,8 +9,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: ubuntu-latest
-        asset_name: mqc_versions_table-linux-amd64
+        os: 
+          - ubuntu-latest
+        asset_name: 
+          - mqc_versions_table-linux-amd64
         version:
           - stable
     steps:
