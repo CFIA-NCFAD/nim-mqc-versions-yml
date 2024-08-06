@@ -1,0 +1,47 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+  pull_request:
+    branches:
+      - '*'
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        version:
+          - stable
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install dependencies (Linux)
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get -qy install make build-essential libtool autoconf grep upx binutils musl-tools
+    # Install Nim and Nimble
+    - uses: jiro4989/setup-nim-action@v2
+      with:
+        nim-version: ${{ matrix.version }}
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: "Run tests with Nimble"
+      run: |
+        nimble test
+    - name: "Build musl statically linked binary"
+      run: |
+        nimble musl
+    - name: Upload binary
+      if: success()
+      uses: actions/upload-artifact@v4
+      with:
+        name: mqc_versions_table
+        path: ./mqc_versions_table
+        compression-level: 0

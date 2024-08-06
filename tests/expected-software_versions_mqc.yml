@@ -1,0 +1,71 @@
+id: software_versions
+description: are collected at run time from the software output.
+section_href: "https://github.com/CFIA-NCFAD/nf-flu"
+section_name: "CFIA-NCFAD/nf-flu Software Versions"
+plot_type: html
+data: |-
+  <style>
+  #nf-core-versions tbody:nth-child(even) {
+      background-color: #f2f2f2;
+  }
+  </style>
+  <table class="table" style="width:100%" id="nf-core-versions">
+      <thead>
+          <tr>
+              <th> Process Name </th>
+              <th> Software </th>
+              <th> Version  </th>
+          </tr>
+      </thead>
+      <tbody>
+  
+  <tr>
+      <td><samp>MQC_VERSIONS_TABLE</samp></td>
+      <td><samp>mqc_versions_table</samp></td>
+      <td><samp>0.1.0</samp></td>
+  </tr>
+  
+  <tr>
+      <td><samp>PROCESS1</samp></td>
+      <td><samp>tool1</samp></td>
+      <td><samp>1.2.3</samp></td>
+  </tr>
+  
+  <tr>
+      <td><samp></samp></td>
+      <td><samp>tool2</samp></td>
+      <td><samp>5.2</samp></td>
+  </tr>
+  
+  <tr>
+      <td><samp>PROCESS2</samp></td>
+      <td><samp>sometool</samp></td>
+      <td><samp>3.4</samp></td>
+  </tr>
+  
+  <tr>
+      <td><samp></samp></td>
+      <td><samp>zebra</samp></td>
+      <td><samp>1.2.3.4.5.6.7</samp></td>
+  </tr>
+  
+  <tr>
+      <td><samp>PROCESS3</samp></td>
+      <td><samp>cooltool</samp></td>
+      <td><samp>2024.8.1dev</samp></td>
+  </tr>
+  
+  <tr>
+      <td><samp>Workflow</samp></td>
+      <td><samp>CFIA-NCFAD/nf-flu</samp></td>
+      <td><samp>1.2.3</samp></td>
+  </tr>
+  
+  <tr>
+      <td><samp></samp></td>
+      <td><samp>Nextflow</samp></td>
+      <td><samp>2024.4.4</samp></td>
+  </tr>
+  
+  </tbody>
+  </table>
