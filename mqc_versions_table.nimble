@@ -1,6 +1,6 @@
 # Package
 
-version       = "0.1.0"
+version       = "0.2.0"
 author        = "Peter Kruczkiewicz"
 description   = "Nextflow versions.yml to MultiQC HTML table custom content YAML."
 license       = "Apache-2.0"

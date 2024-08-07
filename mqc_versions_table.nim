@@ -7,14 +7,48 @@ import strformat
 import strutils
 import tables
 
-import yaml
+import yaml, yaml/data, yaml/parser, yaml/hints
 
 let VERSION = "0.1.0"
 let version = VERSION
 let logger = newConsoleLogger(fmtStr="[$time] - $levelname: ", useStderr=true)
 
+proc parseVersionsYaml(versions_yaml: string): Table[string, Table[string, string]] =
+  ## Parse versions.yml which may contain duplicate top level keys
+  ## Since there may be duplicate keys YAML load cannot be used due to a 
+  ## duplicate table key error resulting in a YamlConstructionError
+  ## so manual parsing is required.
+  var versionsByProcess = initTable[string, Table[string, string]]()
+  var s = newFileStream(versions_yaml)
+  defer: s.close()
+  var yamlParser = initYamlParser()
+  var events = yamlParser.parse(s)
+  var context = initConstructionContext(events)
 
-proc make_versions_html(versions: Table[string, Table[string, string]]): string =
+  assert events.next().kind == yamlStartStream
+  assert events.next().kind == yamlStartDoc
+  assert events.next().kind == yamlStartMap
+  var nextEvent = events.next()
+  var tmpMap: Table[string, string]
+  var currModule: string
+  while nextEvent.kind != yamlEndMap:
+    if nextEvent.kind == yamlScalar:
+      currModule = nextEvent.scalarContent
+      versionsByProcess[currModule] = initTable[string, string]()
+    elif nextEvent.kind == yamlStartMap:
+      nextEvent = events.next()
+      tmpMap = versionsByProcess[currModule]
+      while nextEvent.kind != yamlEndMap:
+        if nextEvent.kind == yamlScalar and events.peek().kind == yamlScalar:
+          tmpMap[nextEvent.scalarContent] = events.next().scalarContent
+        nextEvent = events.next()
+      versionsByProcess[currModule] = tmpMap
+    nextEvent = events.next()
+  assert events.next().kind == yamlEndDoc
+  assert events.next().kind == yamlEndStream
+  return versionsByProcess
+
+proc makeHtmlTable(versions: Table[string, Table[string, string]]): string =
   ## Generate a tabular HTML output of all versions for MultiQC.
   var html: seq[string]
   html.add("""
@@ -68,16 +102,13 @@ proc main*(
   else:
     logger.log(lvlInfo, fmt"Output directory '{outdir}' already exists.")
 
-  var versions_by_process: Table[string, Table[string, string]]
+  var versionsByProcess = parseVersionsYaml(versions_yaml)
 
-  var s = newFileStream(versions_yaml)
-  defer: s.close()
-  load(s, versions_by_process)
-  logger.log(lvlInfo, fmt"versions_by_process={versions_by_process}")
+  logger.log(lvlInfo, fmt"versionsByProcess={versionsByProcess}")
   
   ## Aggregate versions by the module name (derived from fully-qualified process name)
   var versions_by_module = initTable[string, Table[string, string]]()
-  for process, process_versions in versions_by_process.pairs:
+  for process, process_versions in versionsByProcess.pairs:
     let module = process.split(":")[^1]
     if versions_by_module.hasKey(module):
       if versions_by_module[module] != process_versions:
@@ -94,7 +125,7 @@ proc main*(
   versions_by_module["Workflow"][workflow_name] = workflow_version
 
   var htmlTable: string
-  htmlTable = make_versions_html(versions_by_module)
+  htmlTable = makeHtmlTable(versions_by_module)
 
   var versions_mqc = initTable[string, string]()
   versions_mqc["id"] = "software_versions"
@@ -102,7 +133,7 @@ proc main*(
   versions_mqc["section_href"] = fmt"https://github.com/{workflow_name}"
   versions_mqc["plot_type"] = "html"
   versions_mqc["description"] = "are collected at run time from the software output."
-  versions_mqc["data"] = make_versions_html(versions_by_module)
+  versions_mqc["data"] = htmlTable
 
   let software_versions_yml_path = joinPath(outdir, "software_versions.yml")
   var software_versions_yml_out = newFileStream(software_versions_yml_path, fmWrite)
@@ -110,9 +141,11 @@ proc main*(
   let software_versions_mqc_yml_path = joinPath(outdir, "software_versions_mqc.yml")
   var software_versions_mqc_yml_out = newFileStream(software_versions_mqc_yml_path, fmWrite)
   defer: software_versions_mqc_yml_out.close()
-  Dumper().dump(versions_by_module, software_versions_yml_out)
+  var dumper = Dumper()
+  dumper.setBlockOnlyStyle()
+  dumper.dump(versions_by_module, software_versions_yml_out)
   logger.log(lvlInfo, fmt"Wrote '{software_versions_yml_path}'.")
-  Dumper().dump(versions_mqc, software_versions_mqc_yml_out)
+  dumper.dump(versions_mqc, software_versions_mqc_yml_out)
   logger.log(lvlInfo, fmt"Wrote '{software_versions_mqc_yml_path}' for use with MultiQC.")
   logger.log(lvlInfo, "Done!")
 
