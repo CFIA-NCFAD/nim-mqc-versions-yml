@@ -22,7 +22,7 @@ data: |-
   <tr>
       <td><samp>MQC_VERSIONS_TABLE</samp></td>
       <td><samp>mqc_versions_table</samp></td>
-      <td><samp>0.1.0</samp></td>
+      <td><samp>0.2.0</samp></td>
   </tr>
   
   <tr>

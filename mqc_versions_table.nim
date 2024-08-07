@@ -9,14 +9,14 @@ import tables
 
 import yaml, yaml/data, yaml/parser, yaml/hints
 
-let VERSION = "0.1.0"
+let VERSION = "0.2.0"
 let version = VERSION
 let logger = newConsoleLogger(fmtStr="[$time] - $levelname: ", useStderr=true)
 
 proc parseVersionsYaml(versions_yaml: string): Table[string, Table[string, string]] =
   ## Parse versions.yml which may contain duplicate top level keys
-  ## Since there may be duplicate keys YAML load cannot be used due to a 
-  ## duplicate table key error resulting in a YamlConstructionError
+  ## Since there may be duplicate keys YAML "load" function cannot be used due 
+  ## to potential duplicate table keys resulting in a YamlConstructionError
   ## so manual parsing is required.
   var versionsByProcess = initTable[string, Table[string, string]]()
   var s = newFileStream(versions_yaml)
